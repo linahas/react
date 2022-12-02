@@ -1,55 +1,69 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import { Container,Modal,ModalBody } from "reactstrap"
-import UserDetails from './UserDetails'
+import { Button, Container,Modal,ModalBody,Spinner } from "reactstrap"
+import axios from "axios"
+import ProductDetails from './ProductDetails'
+import AddProduct from './AddProduct'
 const Users = () => {
-    const [changed, setchanged] = useState(false)
-    const [modal, setmodal] = useState(false)
-    const toggledModal = () => {
-        setmodal(!modal)
+    const [product, setproduct] = useState(null);
+    const [products, setproducts] = useState([]);
+    const [loading, setloading] = useState(false)
+    const [open, setopen] = useState(false);
+
+    const toggleModal = () => {
+        setopen(!open)
     }
+
     useEffect(() => {
+        const fetchProducts = async () => {
+            setloading(true)
+            let prods = await axios.get("http://127.0.0.1:9900/api/products/")
+            setproducts(prods.data.Products)
+        }
+        fetchProducts()
     }, [])
     
-    const [users, setusers] = useState([
-        {
-            id: 1,
-            name: "ibrahim",
-            classe: "MDW3.1",
-            avatar: "http://t0.gstatic.com/licensed-image?q=tbn:ANd9GcQTBIkxproxJHBsj2ZOkeFr3CYyVJjrfW8qcovw9whTrkRjsqYnBRlprpmyAknfOsug43oiT9iqS9cJe6s"
-        },
-        {
-            id: 1,
-            name: "samir",
-            classe: "MDW3.1",
-            avatar: "http://t0.gstatic.com/licensed-image?q=tbn:ANd9GcQTBIkxproxJHBsj2ZOkeFr3CYyVJjrfW8qcovw9whTrkRjsqYnBRlprpmyAknfOsug43oiT9iqS9cJe6s"
-        },
-        {
-            id: 1,
-            name: "mohsen",
-            classe: "MDW3.1",
-            avatar: "http://t0.gstatic.com/licensed-image?q=tbn:ANd9GcQTBIkxproxJHBsj2ZOkeFr3CYyVJjrfW8qcovw9whTrkRjsqYnBRlprpmyAknfOsug43oiT9iqS9cJe6s"
-        },
-        {
-            id: 1,
-            name: "salah",
-            classe: "MDW3.1",
-            avatar: "http://t0.gstatic.com/licensed-image?q=tbn:ANd9GcQTBIkxproxJHBsj2ZOkeFr3CYyVJjrfW8qcovw9whTrkRjsqYnBRlprpmyAknfOsug43oiT9iqS9cJe6s"
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setloading(true)
+            let prods = await axios.get("http://127.0.0.1:9900/api/products/")
+            setproducts(prods.data.Products)
         }
-    ])
+        fetchProducts()
+    }, [product])
+    
+
+    useEffect(() => {
+        if (products.length > 0) {
+            setloading(false)
+        }
+    }, [products])
+    
+
   return (
     <Container>
+    <AddProduct 
+        open={open}
+        product={product} 
+        toggle={toggleModal}
+        setproduct={setproduct} 
+    />
     <div>Users</div>
+    {loading ? 
+        <Spinner />
+    :
     <Fragment>
-    <Modal isOpen={modal} toggle={toggledModal} >
-        <ModalBody> aaaaaaaaaaaaaaaaaaaa </ModalBody>
-    </Modal>
-    { users.map((user) => {
-        return(
-            <UserDetails user={user} changed={changed}/>
-        )
-    })}
+    { products !== undefined && products !== null && products.length > 0 ?
+        products.map((item) => {
+            return (
+                <ProductDetails product={item}/>
+            )
+        })
+    :
+        <p> no products found.</p>
+    }
     </Fragment>
-    <button onClick={toggledModal} > Changed </button>
+    }
+    <Button onClick={toggleModal} className='btn btn-success'> Add Product </Button>
     </Container>
   )
 }
